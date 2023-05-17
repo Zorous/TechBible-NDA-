@@ -7,6 +7,7 @@ const toolSchema = new mongoose.Schema(
     Icon: { type: String, required: true },
     Category: { type: String, required: true },
     URL: { type: String, required: true },
+    Video_URL: { type: String, required: false },
     Keywords: { type: String, required: false },
     LikedBy: { type: Array, required: false },
     comments: { type: Array, required: false },
