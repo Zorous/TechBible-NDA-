@@ -3,7 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 
 const app = express();
-const port = 5001;
+const port = 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -19,14 +19,23 @@ const uri =
 // Define your routes here
 app.get("/mongo-tools", async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1; // Get the page number from query parameters, default to 1
+    const pageSize = parseInt(req.query.pageSize) || 10; // Get the page size from query parameters, default to 10
+
+    const skip = (page - 1) * pageSize;
+
     await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    // console.log("Connected to MongoDB");
-    const tools = await Tools.find();
+    console.log("Connected to MongoDB");
 
-    // console.log("TOOLS : ",tools);
+    const query = Tools.find();
+    query.skip(skip).limit(pageSize);
+
+    const tools = await query.exec();
+
+    console.log("TOOLS : ", tools);
     res.send(tools); // Send an object containing both variables
   } catch (error) {
     console.error(error);
