@@ -11,8 +11,7 @@ app.use(express.json());
 const Tools = require("./models/Tool");
 const ToolsComments = require("./models/ToolComment");
 
-const uri =
-  "mongodb+srv://techbible:nRgcJ2M8O6DRoznj@techbible.eggj9te.mongodb.net/techbible";
+const uri ="mongodb+srv://techbible:nRgcJ2M8O6DRoznj@techbible.eggj9te.mongodb.net/techbible";
 
 // Connect to the database and fetch the tools data on startup
 
