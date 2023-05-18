@@ -9,6 +9,9 @@ app.use(cors());
 app.use(express.json());
 
 const Tools = require("./models/Tool");
+const NewsArticle = require("./models/NewsArticle");
+
+
 const ToolsComments = require("./models/ToolComment");
 
 const uri ="mongodb+srv://techbible:nRgcJ2M8O6DRoznj@techbible.eggj9te.mongodb.net/techbible";
@@ -42,7 +45,30 @@ app.get("/mongo-tools", async (req, res) => {
   }
 });
 
-// To GET TOOL COMMENTS
+
+
+//NEWS START
+app.get("/news", async (req, res) => {
+  try {
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Connected to MongoDB");
+    const news = await NewsArticle.find();
+
+    console.log("news : ",news);
+    res.send(news); // Send an object containing both variables
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetching news data");
+  }
+});
+//NEWS END
+
+
+
+// To GET TOOL COMMENTS START
 app.get("/mongo-toolComments/:toolId", async (req, res) => {
   let { toolId } = req.params;
 
@@ -61,23 +87,11 @@ app.get("/mongo-toolComments/:toolId", async (req, res) => {
     console.error(error);
     res.status(500).send("Error fetching tools data");
   }
-  // finally {
-  //   mongoose.connection.close();
-  // }
 });
+// To GET TOOL COMMENTS END
 
-// app.post("/like/:id/:uid", async (req, res) => {
-//   let { id, uid } = req.params;
-//   try {
-//     await Tools.findByIdAndUpdate(id, {
-//       $push: { LikedBy: uid },
-//     });
-//   } catch (error) {
-//     console.log(error);
-//   }
-//   console.log("tool has been liked successfully!!!!!");
-// });
 
+//LIKE LOGIC START
 app.post("/like/:id/:uid", async (req, res) => {
   let { id, uid } = req.params;
   try {
@@ -90,6 +104,8 @@ app.post("/like/:id/:uid", async (req, res) => {
 
   console.log("tool has been liked successfully!!!!!");
 });
+//LIKE LOGIC END
+
 
 //remove a user from a tool likedBy array
 app.post("/unlike/:id/:uid", async (req, res) => {
@@ -111,7 +127,9 @@ app.post("/unlike/:id/:uid", async (req, res) => {
   console.log("tool has been unliked succefuly!!!!!");
 });
 
-// Add a Tool Comment
+
+
+// Add a Tool Comment START
 app.post("/addToolComment/:toolId/:userId/:commentText", async (req, res) => {
   try {
     const { toolId, userId, commentText } = req.params;
@@ -131,8 +149,10 @@ app.post("/addToolComment/:toolId/:userId/:commentText", async (req, res) => {
     res.status(500).send("Error adding tool comment");
   }
 });
+// Add a Tool Comment END
 
-// LIKE A TOOL COMMENT
+
+// LIKE A TOOL COMMENT START
 app.post("/likeToolComment/:toolCommentId/:userId", async (req, res) => {
   let { toolCommentId, userId } = req.params;
   try {
@@ -144,8 +164,10 @@ app.post("/likeToolComment/:toolCommentId/:userId", async (req, res) => {
     console.log(error);
   }
 });
+// LIKE A TOOL COMMENT END
 
-// UNLIKE A TOOL COMMENT
+
+// UNLIKE A TOOL COMMENT START
 app.post("/unlikeToolComment/:toolCommentId/:userId", async (req, res) => {
   let { toolCommentId, userId } = req.params;
   try {
@@ -168,21 +190,8 @@ app.post("/unlikeToolComment/:toolCommentId/:userId", async (req, res) => {
     console.log(error);
   }
 });
+// UNLIKE A TOOL  END
 
-app.post("", async (req, res) => {
-  try {
-    const tools = await Tools.find({ Category: { $in: res.interests } })
-      .limit(3)
-      .toArray();
-
-    console.log("Tools:", tools);
-    // Do something with the tools array
-
-    // Close the MongoDB connection when finished
-  } catch (error) {
-    console.log(error);
-  }
-});
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
