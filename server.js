@@ -22,7 +22,7 @@ const uri ="mongodb+srv://techbible:nRgcJ2M8O6DRoznj@techbible.eggj9te.mongodb.n
 app.get("/mongo-tools", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Get the page number from query parameters, default to 1
-    const pageSize = parseInt(req.query.pageSize) || 90; // Get the page size from query parameters, default to 10
+    const pageSize = parseInt(req.query.pageSize) || 200; // Get the page size from query parameters, default to 10
 
     const skip = (page - 1) * pageSize;
 
