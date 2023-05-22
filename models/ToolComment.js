@@ -6,6 +6,7 @@ const toolCommentSchema = new mongoose.Schema(
     userId: { type: String, required: true },
     toolId: { type: String, required: true },
     likedBy: { type: Array, required: true },
+    parentId: { type: String, required: true },
   },
   { timestamps: true }
 );

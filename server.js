@@ -129,25 +129,29 @@ app.post("/unlike/:id/:uid", async (req, res) => {
 
 
 // Add a Tool Comment START
-app.post("/addToolComment/:toolId/:userId/:commentText", async (req, res) => {
-  try {
-    const { toolId, userId, commentText } = req.params;
-    const newComment = await ToolsComments.create({
-      text: commentText,
-      userId: userId,
-      toolId: toolId,
-    });
-    // assuming that `Tools` is the model for the tools collection
-    const tool = await Tools.findById(toolId);
-    tool.comments.push(newComment._id);
-    await tool.save();
-    res.status(201).json(newComment);
-    console.log("comment added");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error adding tool comment");
+app.post(
+  "/addToolComment/:toolId/:userId/:commentText/:parentId",
+  async (req, res) => {
+    try {
+      const { toolId, userId, commentText, parentId } = req.params;
+      const newComment = await ToolsComments.create({
+        text: commentText,
+        userId: userId,
+        toolId: toolId,
+        parentId: parentId,
+      });
+      // assuming that `Tools` is the model for the tools collection
+      const tool = await Tools.findById(toolId);
+      tool.comments.push(newComment._id);
+      await tool.save();
+      res.status(201).json(newComment);
+      console.log("comment added");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Error adding tool comment");
+    }
   }
-});
+);
 // Add a Tool Comment END
 
 
