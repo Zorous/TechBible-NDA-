@@ -8,15 +8,16 @@ const port = 5000;
 app.use(cors());
 app.use(express.json());
 
+
+//MODELS
 const Tools = require("./models/Tool");
 const NewsArticle = require("./models/NewsArticle");
-
-
 const ToolsComments = require("./models/ToolComment");
 
+
+//CONNECTING TO DATABASE
 const uri ="mongodb+srv://techbible:nRgcJ2M8O6DRoznj@techbible.eggj9te.mongodb.net/techbible";
 
-// Connect to the database and fetch the tools data on startup
 
 // Define your routes here
 app.get("/mongo-tools", async (req, res) => {
@@ -56,7 +57,6 @@ app.get("/news", async (req, res) => {
     });
     console.log("Connected to MongoDB");
     const news = await NewsArticle.find();
-
     console.log("news : ",news);
     res.send(news); // Send an object containing both variables
   } catch (error) {
@@ -79,7 +79,6 @@ app.get("/mongo-toolComments/:toolId", async (req, res) => {
     });
 
     const toolsComments = await ToolsComments.find({ toolId: toolId });
-
     res.send(toolsComments);
     console.log("toolsComments :" + toolsComments);
     console.log(typeof toolsComments);
@@ -152,6 +151,63 @@ app.post("/addToolComment/:toolId/:userId/:commentText", async (req, res) => {
 // Add a Tool Comment END
 
 
+
+
+
+// Add a News Article START
+app.post("/addArticle", async (req, res) => {
+  try {
+    const { Description, Title, URL, ImageURL, Provider } = req.body; // Access request body instead of params
+    const newArticle = await NewsArticle.create({
+      name: Title,
+      description: Description,
+      url: URL,
+      image: {
+        contentUrl: ImageURL,
+      },
+      provider: [
+        {
+          name: Provider,
+          image: {
+            contentUrl: "https://t4.ftcdn.net/jpg/02/51/95/53/360_F_251955356_FAQH0U1y1TZw3ZcdPGybwUkH90a3VAhb.jpg",
+          },
+        },
+      ],
+      datePublished: new Date(),
+    });
+  
+    res.status(201).json(newArticle);
+    console.log("Article added");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error adding News Article");
+  }
+});
+
+// Add a News Article END
+
+
+
+//DELETE ARTICLE START
+app.delete("/deleteArticle/:id", async (req, res) => {
+  try {
+    const articleId = req.params.id;
+    const deletedArticle = await NewsArticle.findByIdAndRemove(articleId);
+
+    if (!deletedArticle) {
+      return res.status(404).json({ error: "Article not found" });
+    }
+
+    res.status(200).json({ message: "Article deleted successfully!" });
+    console.log("Article deleted");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error deleting article");
+  }
+});
+//DELETE ARTICLE END
+
+
 // LIKE A TOOL COMMENT START
 app.post("/likeToolComment/:toolCommentId/:userId", async (req, res) => {
   let { toolCommentId, userId } = req.params;
@@ -191,7 +247,6 @@ app.post("/unlikeToolComment/:toolCommentId/:userId", async (req, res) => {
   }
 });
 // UNLIKE A TOOL  END
-
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
