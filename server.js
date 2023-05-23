@@ -22,24 +22,36 @@ const uri ="mongodb+srv://techbible:nRgcJ2M8O6DRoznj@techbible.eggj9te.mongodb.n
 // Define your routes here
 app.get("/mongo-tools", async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; // Get the page number from query parameters, default to 1
-    const pageSize = parseInt(req.query.pageSize) || 400; // Get the page size from query parameters, default to 10
-
-    const skip = (page - 1) * pageSize;
-
     await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
     console.log("Connected to MongoDB");
+    const tools = await Tools.find();
 
-    const query = Tools.find();
-    query.skip(skip).limit(pageSize);
-
-    const tools = await query.exec();
-
-    console.log("TOOLS : ", tools);
+    // console.log("TOOLS : ",tools);
     res.send(tools); // Send an object containing both variables
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetching tools data");
+  }
+});
+
+// get a specific number of tools
+app.get("/mongo-tools/:limit", async (req, res) => {
+  try {
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    const limit = parseInt(req.params.limit);
+
+    const tools = await Tools.find()
+      .sort({ likedBy: -1 }) // Sort by the 'likedBy' field in descending order
+      .limit(limit);
+
+    res.send(tools);
   } catch (error) {
     console.error(error);
     res.status(500).send("Error fetching tools data");
