@@ -37,6 +37,23 @@ app.get("/mongo-tools", async (req, res) => {
   }
 });
 
+//DELETE a Tool
+app.delete("/delete-tool/:id", async (req, res) => {
+  try {
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Connected to MongoDB");
+    const tool = await Tools.deleteOne({ _id: req.params.id });
+
+    res.send(tool); // Send an object containing both variables
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error deleting tool data");
+  }
+});
+
 // get a specific number of tools
 app.get("/mongo-tools/:limit", async (req, res) => {
   try {
