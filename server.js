@@ -14,6 +14,7 @@ const ToolsComments = require("./models/ToolComment");
 const Subscribers = require("./models/Subscribers");
 const NewsArticle = require("./models/NewsArticle");
 const HomePageTool = require("./models/HomePageTool");
+const Discussion = require("./models/Discussion");
 
 //CONNECTING TO DATABASE
 
@@ -37,7 +38,8 @@ app.get("/mongo-tools", async (req, res) => {
     res.status(500).send("Error fetching tools data");
   }
 });
-//HOMETOOLS
+
+//HOME TOOLS
 app.get("/homePageTools", async (req, res) => {
   try {
     await mongoose.connect(uri, {
@@ -54,6 +56,8 @@ app.get("/homePageTools", async (req, res) => {
     res.status(500).send("Error fetching tools data");
   }
 });
+
+
 
 //DELETE a Tool
 app.delete("/delete-tool/:id", async (req, res) => {
@@ -198,7 +202,7 @@ app.post("/addArticle", async (req, res) => {
 
 // Add a News Article END
 
-// Add a Tool Comment
+//  Add a Tool Comment
 app.post(
   "/addToolComment/:toolId/:userId/:commentText/:parentId",
   async (req, res) => {
@@ -294,3 +298,49 @@ app.post("/addSubscriber/:email", async (req, res) => {
     res.status(500).send("Error adding tool comment");
   }
 });
+
+
+
+//GETTING ALL THE DISCUSSIONS
+
+app.get("/discussions", async (req, res) => {
+  try {
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Connected to MongoDB");
+
+    const discussions = await Discussion.find({});
+    console.log("Discussions: ", discussions);
+    res.send(discussions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetching tools data");
+  }
+});
+
+// Create New Discussion
+app.post(
+  "/create-discussion",
+  async (req, res) => {
+    try {
+      const { userId, title, description, category } = req.body;
+
+      const newDiscussion = await Discussion.create({
+        Title: title,
+        ParentId: null,
+        UserId: userId,
+        Description: description,
+        Category: category,
+        LikedBy: []
+      });
+      
+      res.status(201).json(newDiscussion);
+      console.log("comment added");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Error adding tool comment");
+    }
+  }
+);
