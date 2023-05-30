@@ -8,16 +8,17 @@ const port = 5000;
 app.use(cors());
 app.use(express.json());
 
-
 //MODELS
 const Tools = require("./models/Tool");
-const NewsArticle = require("./models/NewsArticle");
 const ToolsComments = require("./models/ToolComment");
-
+const Subscribers = require("./models/Subscribers");
+const NewsArticle = require("./models/NewsArticle");
+const HomePageTool = require("./models/HomePageTool");
 
 //CONNECTING TO DATABASE
-const uri ="mongodb+srv://techbible:nRgcJ2M8O6DRoznj@techbible.eggj9te.mongodb.net/techbible";
 
+const uri =
+  "mongodb+srv://techbible:nRgcJ2M8O6DRoznj@techbible.eggj9te.mongodb.net/techbible";
 
 // Define your routes here
 app.get("/mongo-tools", async (req, res) => {
@@ -31,6 +32,23 @@ app.get("/mongo-tools", async (req, res) => {
 
     // console.log("TOOLS : ",tools);
     res.send(tools); // Send an object containing both variables
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetching tools data");
+  }
+});
+//HOMETOOLS
+app.get("/homePageTools", async (req, res) => {
+  try {
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Connected to MongoDB");
+
+    const tools = await HomePageTool.find({});
+    console.log("Home TOOLS: ", tools);
+    res.send(tools);
   } catch (error) {
     console.error(error);
     res.status(500).send("Error fetching tools data");
@@ -75,29 +93,7 @@ app.get("/mongo-tools/:limit", async (req, res) => {
   }
 });
 
-
-
-//NEWS START
-app.get("/news", async (req, res) => {
-  try {
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("Connected to MongoDB");
-    const news = await NewsArticle.find();
-    console.log("news : ",news);
-    res.send(news); // Send an object containing both variables
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error fetching news data");
-  }
-});
-//NEWS END
-
-
-
-// To GET TOOL COMMENTS START
+// To GET TOOL COMMENTS
 app.get("/mongo-toolComments/:toolId", async (req, res) => {
   let { toolId } = req.params;
 
@@ -108,6 +104,7 @@ app.get("/mongo-toolComments/:toolId", async (req, res) => {
     });
 
     const toolsComments = await ToolsComments.find({ toolId: toolId });
+
     res.send(toolsComments);
     console.log("toolsComments :" + toolsComments);
     console.log(typeof toolsComments);
@@ -116,10 +113,7 @@ app.get("/mongo-toolComments/:toolId", async (req, res) => {
     res.status(500).send("Error fetching tools data");
   }
 });
-// To GET TOOL COMMENTS END
 
-
-//LIKE LOGIC START
 app.post("/like/:id/:uid", async (req, res) => {
   let { id, uid } = req.params;
   try {
@@ -132,8 +126,6 @@ app.post("/like/:id/:uid", async (req, res) => {
 
   console.log("tool has been liked successfully!!!!!");
 });
-//LIKE LOGIC END
-
 
 //remove a user from a tool likedBy array
 app.post("/unlike/:id/:uid", async (req, res) => {
@@ -155,9 +147,58 @@ app.post("/unlike/:id/:uid", async (req, res) => {
   console.log("tool has been unliked succefuly!!!!!");
 });
 
+//NEWS START
+app.get("/news", async (req, res) => {
+  try {
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Connected to MongoDB");
+    const news = await NewsArticle.find();
+    console.log("news : ", news);
+    res.send(news); // Send an object containing both variables
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetching news data");
+  }
+});
+//NEWS END
 
+// Add a News Article START
+app.post("/addArticle", async (req, res) => {
+  try {
+    const { Description, Title, URL, ImageURL, Provider } = req.body; // Access request body instead of params
+    const newArticle = await NewsArticle.create({
+      name: Title,
+      description: Description,
+      url: URL,
+      image: {
+        contentUrl: ImageURL,
+      },
+      provider: [
+        {
+          name: Provider,
+          image: {
+            contentUrl:
+              "https://t4.ftcdn.net/jpg/02/51/95/53/360_F_251955356_FAQH0U1y1TZw3ZcdPGybwUkH90a3VAhb.jpg",
+          },
+        },
+      ],
+      datePublished: new Date(),
+    });
 
-// Add a Tool Comment START
+    res.status(201).json(newArticle);
+    console.log("Article added");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error adding News Article");
+  }
+});
+
+// Add a News Article END
+
+// Add a Tool Comment
 app.post(
   "/addToolComment/:toolId/:userId/:commentText/:parentId",
   async (req, res) => {
@@ -181,67 +222,8 @@ app.post(
     }
   }
 );
-// Add a Tool Comment END
 
-
-
-
-
-// Add a News Article START
-app.post("/addArticle", async (req, res) => {
-  try {
-    const { Description, Title, URL, ImageURL, Provider } = req.body; // Access request body instead of params
-    const newArticle = await NewsArticle.create({
-      name: Title,
-      description: Description,
-      url: URL,
-      image: {
-        contentUrl: ImageURL,
-      },
-      provider: [
-        {
-          name: Provider,
-          image: {
-            contentUrl: "https://t4.ftcdn.net/jpg/02/51/95/53/360_F_251955356_FAQH0U1y1TZw3ZcdPGybwUkH90a3VAhb.jpg",
-          },
-        },
-      ],
-      datePublished: new Date(),
-    });
-  
-    res.status(201).json(newArticle);
-    console.log("Article added");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error adding News Article");
-  }
-});
-
-// Add a News Article END
-
-
-
-//DELETE ARTICLE START
-app.delete("/deleteArticle/:id", async (req, res) => {
-  try {
-    const articleId = req.params.id;
-    const deletedArticle = await NewsArticle.findByIdAndRemove(articleId);
-
-    if (!deletedArticle) {
-      return res.status(404).json({ error: "Article not found" });
-    }
-
-    res.status(200).json({ message: "Article deleted successfully!" });
-    console.log("Article deleted");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error deleting article");
-  }
-});
-//DELETE ARTICLE END
-
-
-// LIKE A TOOL COMMENT START
+// LIKE A TOOL COMMENT
 app.post("/likeToolComment/:toolCommentId/:userId", async (req, res) => {
   let { toolCommentId, userId } = req.params;
   try {
@@ -253,10 +235,8 @@ app.post("/likeToolComment/:toolCommentId/:userId", async (req, res) => {
     console.log(error);
   }
 });
-// LIKE A TOOL COMMENT END
 
-
-// UNLIKE A TOOL COMMENT START
+// UNLIKE A TOOL COMMENT
 app.post("/unlikeToolComment/:toolCommentId/:userId", async (req, res) => {
   let { toolCommentId, userId } = req.params;
   try {
@@ -279,8 +259,38 @@ app.post("/unlikeToolComment/:toolCommentId/:userId", async (req, res) => {
     console.log(error);
   }
 });
-// UNLIKE A TOOL  END
+
+app.post("", async (req, res) => {
+  try {
+    const tools = await Tools.find({ Category: { $in: res.interests } })
+      .limit(3)
+      .toArray();
+
+    console.log("Tools:", tools);
+    // Do something with the tools array
+
+    // Close the MongoDB connection when finished
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
+});
+
+//add newsletter subscribers
+app.post("/addSubscriber/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const newSubscriber = await Subscribers.create({
+      email: email,
+    });
+
+    res.status(201).json(newSubscriber);
+    console.log("comment added");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error adding tool comment");
+  }
 });
